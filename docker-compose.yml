@@ -1,8 +1,29 @@
 version: '3'
 services:
-  postgres:
+  db:
     image: postgres:10.4-alpine
     environment:
       POSTGRES_PASSWORD: ""
     ports:
       - 5432:5432
+  backend:
+    build: ./backend
+    command: python manage.py runserver
+    volumes:
+      - ./backend:/myapp/backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file: ./backend/.env
+  frontend:
+    image: "node:10-alpine"
+    user: "node"
+    working_dir: /myapp/frontend
+    volumes:
+      - ./frontend:/myapp/frontend
+    ports:
+      - "3000:3000"
+    command: "yarn run dev"
+    depends_on:
+      - backend
